@@ -57,7 +57,7 @@ def get_data(img_num, path):
 
 def load_batch(train_num, batch_size, path):   
     path1 = path + "A/*.*" # distorted image
-    path2 = path + "B/*.*"  # gt rectified image          
+    path2 = path + "B/*.*"  # gt rectified image
     loc_list1 = glob(path1)
     loc_list2 = glob(path2) 
     
@@ -86,4 +86,5 @@ def np2img(img):
     img = img * 127.5 + 127.5
     img = img.astype('uint8')
     img = np.reshape(img, [img_w, img_h, img_channels])
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     return img

@@ -11,9 +11,9 @@ import os
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--test_num", type=int, default=100, help="test data num")
-parser.add_argument("--test_path", type=str, default="/data/cylin/lk/SDSE/dataset/test/", help="path of the test dataset")
+parser.add_argument("--test_path", type=str, default="dataset/test/", help="path of the test dataset")
 parser.add_argument("--write_path", type=str, default="./dataset/test/pre/", help="path of saving predicted images")
-parser.add_argument("--load_models", default='/data/cylin/lk/lk/DR-GAN/experiments/demo/weights/1220/generator_4.h5', help="where to load models")
+parser.add_argument("--load_models", default='weights/generator.h5', help="where to load models")
 parser.add_argument("--gpu", type=str, default="2", help="gpu number")
 opt = parser.parse_args()
 print(opt)

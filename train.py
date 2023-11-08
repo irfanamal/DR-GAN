@@ -6,16 +6,16 @@ from network.utils import *
 from network.losses import wasserstein_loss, perceptual_loss
 from network.model import generator, discriminator, DRGAN
 from keras.optimizers import Adam
-from skimage.measure import compare_psnr as psnr
-from skimage.measure import compare_ssim as ssim
+from skimage.metrics import peak_signal_noise_ratio as psnr
+from skimage.metrics import structural_similarity as ssim
 
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--epoch_num", type=int, default=200, help="epoch to start training from")
-parser.add_argument("--train_num", type=int, default=30000, help="training data num")
-parser.add_argument("--test_num", type=int, default=500, help="test data num")
-parser.add_argument("--train_path", type=str, default="/data/cylin/lk/OP/dataset_mask/train/", help="path of the train dataset")
-parser.add_argument("--test_path", type=str, default="/data/cylin/lk/OP/dataset_mask/test/", help="path of the test dataset")
+parser.add_argument("--train_num", type=int, default=1000, help="training data num")
+parser.add_argument("--test_num", type=int, default=1000, help="test data num")
+parser.add_argument("--train_path", type=str, default="dataset/train/", help="path of the train dataset")
+parser.add_argument("--test_path", type=str, default="dataset/test/", help="path of the test dataset")
 parser.add_argument("--batch_size", type=int, default=16, help="size of the batches")
 parser.add_argument("--lr_g", type=float, default=1e-4, help="adam: learning rate of generator")
 parser.add_argument("--lr_d", type=float, default=1e-4, help="adam: learning rate of discriminator")
@@ -27,8 +27,8 @@ parser.add_argument("--save_interval", type=int, default=5, help="interval betwe
 parser.add_argument("--lambda_gen", type=float, default=20, help="generator loss weight")
 parser.add_argument("--lambda_dis", type=float, default=1, help="discriminator loss weight")
 parser.add_argument("--critic_updates", type=int, default=3, help="Number of discriminator training")
-parser.add_argument("--save_images", default='./experiments/drgan/imgs/', help="where to store images")
-parser.add_argument("--save_models", default='./experiments/drgan/weights/', help="where to save models")
+parser.add_argument("--save_images", default='./experiments/imgs/', help="where to store images")
+parser.add_argument("--save_models", default='./experiments/weights/', help="where to save models")
 parser.add_argument("--gpu", type=str, default="2", help="gpu number")
 opt = parser.parse_args()
 print(opt)
@@ -46,8 +46,8 @@ def train_drgan():
     gan = DRGAN(g, d)
     
     # set up optimizer
-    d_opt = Adam(lr = opt.lr_g, beta_1 = opt.b1, beta_2 = opt.b2, epsilon = opt.ep)
-    d_on_g_opt = Adam(lr = opt.lr_d, beta_1 = opt.b1, beta_2 = opt.b2, epsilon = opt.ep)
+    d_opt = Adam(learning_rate = opt.lr_g, beta_1 = opt.b1, beta_2 = opt.b2, epsilon = opt.ep)
+    d_on_g_opt = Adam(learning_rate = opt.lr_d, beta_1 = opt.b1, beta_2 = opt.b2, epsilon = opt.ep)
     
     # compile models
     d.trainable = True
@@ -88,7 +88,8 @@ def train_drgan():
         if ((epoch + 1) % opt.save_interval == 0):
 
             # save weights
-            save_all_weights(g, d, opt.save_models, epoch)
+            if ((epoch + 1) % (opt.save_interval*8) == 0):
+                save_all_weights(g, d, opt.save_models, epoch)
 
             # save image
             batch_indexes_test = permutated_indexes_test[0 : 16]
@@ -113,7 +114,7 @@ def train_drgan():
                 rec_img_test = np2img(rec_str_test)
                 src_img_test = np2img(src_img_test)
                 
-                sum_ssim_test += ssim(src_img_test, rec_img_test, multichannel = True)
+                sum_ssim_test += ssim(src_img_test, rec_img_test, multichannel = True, channel_axis=2)
                 sum_psnr_test += psnr(src_img_test, rec_img_test)
             
             test_ssim = sum_ssim_test / each_test_num

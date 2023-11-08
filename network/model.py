@@ -1,9 +1,9 @@
 from keras.layers import Input, Activation, UpSampling2D
-from keras.layers.advanced_activations import LeakyReLU
+from keras.layers import LeakyReLU
 from keras.layers import concatenate
-from keras.layers.convolutional import Conv2D
-from keras.layers.core import Dense, Flatten, Dropout, Activation
-from keras.layers.normalization import BatchNormalization
+from keras.layers import Conv2D
+from keras.layers import Dense, Flatten, Dropout, Activation
+from keras.layers import BatchNormalization
 from keras.models import Model
 import keras
 
@@ -137,7 +137,7 @@ def generator():
     #outputs    
     outputs = Activation('tanh')(de_conv8)
     
-    model = Model(input = inputs, output = outputs)
+    model = Model(inputs = inputs, outputs = outputs)
     return model
     
   
