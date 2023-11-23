@@ -1,1 +1,2 @@
-python train.py --train_path dataset/train/ --batch_size 16 --gpu "0"
+# python train.py --train_path dataset/train/ --batch_size 16 --gpu "0"
+python train.py --epoch_start 12 --epoch_num 25 --last_loss 7453.9472734375 --train_num 30000 --test_num 2000 --train_path ../images/train/original/ --test_path ../images/val/ --g_weight experiments/weights/generator_11_7453.9472734375.h5 --d_weight experiments/weights/discriminator_11_7453.9472734375.h5 --batch_size 16 --save_interval 5 --critic_updates 10 --gpu "0"

@@ -6,11 +6,22 @@ from keras.layers import Dense, Flatten, Dropout, Activation
 from keras.layers import BatchNormalization
 from keras.models import Model
 import keras
+import tensorflow as tf
+import contextlib
 
 # hyper-parameter
 weight_decay = 0.01
 ndf = 64
 img_shape = (256, 256, 3)
+
+@contextlib.contextmanager
+def options(options):
+  old_opts = tf.config.optimizer.get_experimental_options()
+  tf.config.optimizer.set_experimental_options(options)
+  try:
+    yield
+  finally:
+    tf.config.optimizer.set_experimental_options(old_opts)
 
 def generator():
     # 256x256x3
@@ -66,34 +77,35 @@ def generator():
     
     # Deconvolution
     # 2x2x512
-    up1 = UpSampling2D()(conv8)
-    de_conv1 = Conv2D(512, (4, 4), padding = 'same', 
-                    kernel_regularizer = keras.regularizers.l2(weight_decay),
-                    kernel_initializer = 'he_normal')(up1)
-    de_conv1 = BatchNormalization()(de_conv1)
-    de_conv1 = Dropout(0.5)(de_conv1)
-    de_conv1 = LeakyReLU(0.2)(de_conv1)
-    merge1 = concatenate([de_conv1, conv7], axis = 3)
-    # 4x4x512
-    up2 = UpSampling2D()(merge1)
-    de_conv2 = Conv2D(512, (4, 4), padding = 'same', 
-                    kernel_regularizer = keras.regularizers.l2(weight_decay),
-                    kernel_initializer = 'he_normal')(up2)
-    de_conv2 = BatchNormalization()(de_conv2)
-    de_conv2 = Dropout(0.5)(de_conv2)
-    de_conv2 = LeakyReLU(0.2)(de_conv2)
-    
-    merge2 = concatenate([de_conv2, conv6], axis = 3)      
-    # 8x8x512
-    up3 = UpSampling2D()(merge2)
-    de_conv3 = Conv2D(512, (4, 4), padding = 'same', 
-                    kernel_regularizer = keras.regularizers.l2(weight_decay),
-                    kernel_initializer = 'he_normal')(up3)
-    de_conv3 = BatchNormalization()(de_conv3)
-    de_conv3 = Dropout(0.5)(de_conv3)
-    de_conv3 = LeakyReLU(0.2)(de_conv3)
-    
-    merge3 = concatenate([de_conv3, conv5], axis = 3)
+    with options({'layout_optimizer': False}):
+        up1 = UpSampling2D()(conv8)
+        de_conv1 = Conv2D(512, (4, 4), padding = 'same', 
+                        kernel_regularizer = keras.regularizers.l2(weight_decay),
+                        kernel_initializer = 'he_normal')(up1)
+        de_conv1 = BatchNormalization()(de_conv1)
+        de_conv1 = Dropout(0.5)(de_conv1)
+        de_conv1 = LeakyReLU(0.2)(de_conv1)
+        merge1 = concatenate([de_conv1, conv7], axis = 3)
+        # 4x4x512
+        up2 = UpSampling2D()(merge1)
+        de_conv2 = Conv2D(512, (4, 4), padding = 'same', 
+                        kernel_regularizer = keras.regularizers.l2(weight_decay),
+                        kernel_initializer = 'he_normal')(up2)
+        de_conv2 = BatchNormalization()(de_conv2)
+        de_conv2 = Dropout(0.5)(de_conv2)
+        de_conv2 = LeakyReLU(0.2)(de_conv2)
+        
+        merge2 = concatenate([de_conv2, conv6], axis = 3)      
+        # 8x8x512
+        up3 = UpSampling2D()(merge2)
+        de_conv3 = Conv2D(512, (4, 4), padding = 'same', 
+                        kernel_regularizer = keras.regularizers.l2(weight_decay),
+                        kernel_initializer = 'he_normal')(up3)
+        de_conv3 = BatchNormalization()(de_conv3)
+        de_conv3 = Dropout(0.5)(de_conv3)
+        de_conv3 = LeakyReLU(0.2)(de_conv3)
+        
+        merge3 = concatenate([de_conv3, conv5], axis = 3)
 
     # 16x16x512
     up4 = UpSampling2D()(merge3)
